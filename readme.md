@@ -26,7 +26,7 @@ This is a basic Express API built with **Node.js**, **Express**, **Sequelize (Po
 - auth/signin  (POST)
   - username and password required
 - tasks        (POST to create, GET to get all tasks) 
-  - accepts query - priority, status, dueDate, sortDueDate, sortPriority
+  - accepts query - priority, status, dueDate(date1,date2), sortDueDate, sortPriority
 - tasks/:id    (GET - get a task, DELETE - for delete , PUT - for update)
 
 ---

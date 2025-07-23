@@ -27,8 +27,15 @@ export async function signupUser(req, res, next) {
     logger.info(`User created with ID: ${user.id} and username: ${username}`);
     res.status(201).send(user);
   } catch (err) {
+    if (err.name === "SequelizeUniqueConstraintError") {
+      const error = new Error("Username or email already exists");
+      error.statusCode = 409;
+      error.details = err.errors;
+      return next(error);
+    }
     err.statusCode = 500;
     err.message = "Internal Server Error";
+    console.log(err);
     next(err);
   }
 }
