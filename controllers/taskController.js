@@ -41,7 +41,7 @@ export async function updateTask(req, res, next) {
     }
     const taskId = req.params.id;
     const [updated] = await Task.update(result.data, {
-      where: { id: taskId },
+      where: { id: taskId, userId: req.user.id },
     });
     if (!updated) {
       const err = new Error("Task not found");
@@ -60,7 +60,7 @@ export async function updateTask(req, res, next) {
 export async function getTaskByID(req, res, next) {
   try {
     const taskId = req.params.id;
-    const task = await Task.findOne({ where: { id: taskId } });
+    const task = await Task.findOne({ where: { id: taskId, userId: req.user.id } });
     if (!task) {
       const err = new Error("Task not found");
       err.statusCode = 404;
@@ -79,7 +79,7 @@ export async function getTaskByID(req, res, next) {
 export async function deleteTaskById(req, res, next) {
   try {
     const taskId = req.params.id;
-    const deleted = await Task.destroy({ where: { id: taskId } });
+    const deleted = await Task.destroy({ where: { id: taskId, userId: req.user.id } });
     if (!deleted) {
       const err = new Error("Task not found");
       err.statusCode = 404;
