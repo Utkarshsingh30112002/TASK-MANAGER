@@ -1,29 +1,23 @@
 import express from "express";
-import { z } from "zod";
 import bcrypt from "bcrypt";
 import db from "../db/models/index.js";
-import jwt from 'jsonwebtoken'
+import jwt from "jsonwebtoken";
+import { createUserSchema, signinUserSchema } from "../zod/user.schema.js";
+import { jwtSecret } from "../config/config.js";
+import logger from "../services/logger.js";
 
 const User = db.User;
 
 const router = express.Router();
 
-const createUserSchema = z.object({
-  username: z.string().min(4).max(16),
-  email: z.email(),
-  password: z
-    .string()
-    .min(8, "password min length is 8")
-    .max(16, "password max length is 16"),
-});
-
-router.post("/signup", async (req, res) => {
+router.post("/signup", async (req, res, next) => {
   try {
-    console.log("here");
     const result = createUserSchema.safeParse(req.body);
     if (!result.success) {
-      res.status(501).send(result.error.message);
-      return;
+      const err = new Error(result.error.message);
+      err.details = result.error.errors;
+      err.statusCode = 400;
+      return next(err);
     }
     const { username, password, email } = result.data;
     const hashedPass = await bcrypt.hash(password, 5);
@@ -32,14 +26,53 @@ router.post("/signup", async (req, res) => {
       email,
       password: hashedPass,
     });
-
-    res.send(user);
+    logger.info(`User created with ID: ${user.id} and username: ${username}`);
+    res.status(201).send(user);
   } catch (err) {
-    res.status(400).send(err);
+    err.statusCode = 500;
+    err.message = "Internal Server Error";
+    next(err);
   }
 });
 
-router.post('signin',async(req,res)=>{
+router.post("/signin", async (req, res, next) => {
+  try {
+    const result = signinUserSchema.safeParse(req.body);
+    if (!result.success) {
+      const err = new Error(result.error.message);
+      err.details = result.error.errors;
+      err.statusCode = 400;
+      return next(err);
+    }
+    const { username, password } = result.data;
+    const user = await User.findOne({
+      where: {
+        username,
+      },
+    });
+    if (!user || !user.password) {
+      const err = new Error("User not found");
+      err.statusCode = 404;
+      err.details = "User with this username does not exist";
+      return next(err);
+    }
+    const userCheck = await bcrypt.compare(password, user.password);
 
-})
+    if (!userCheck) {
+      const err = new Error("Incorrect password");
+      err.statusCode = 401;
+      err.details = "The password you entered is incorrect";
+      return next(err);
+    }
+
+    const token = jwt.sign({ username, id: user.id }, jwtSecret);
+    res.cookie("authToken", token);
+    logger.info(`User signed in with ID: ${user.id} and username: ${username}`);
+    res.send({ message: "Signin Successfull", token });
+  } catch (err) {
+    err.statusCode = 500;
+    err.message = "Internal Server Error";
+    next(err);
+  }
+});
 export default router;

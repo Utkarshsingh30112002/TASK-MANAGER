@@ -30,3 +30,4 @@ export default (sequelize, DataTypes) => {
 
   return Task;
 };
+
