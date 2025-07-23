@@ -31,6 +31,7 @@ This is a basic Express API built with **Node.js**, **Express**, **Sequelize (Po
 
 ---
 ## Project Structure
+```
 .
 ├── controllers/
 ├── routes/
@@ -42,5 +43,6 @@ This is a basic Express API built with **Node.js**, **Express**, **Sequelize (Po
 ├── zod/
 ├── app.js
 └── README.md
+```
 
 
