@@ -7,7 +7,7 @@ export default function errorHandler(err, req, res, next) {
       field: e.path.join("."),
       message: e.message,
     }));
-
+    logger.error("Validation error", { details: formatted });
     return res.status(400).json(formatted);
   }
 
