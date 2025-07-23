@@ -1,6 +1,16 @@
+import { ZodError } from "zod";
 import logger from "../services/logger.js";
 
 export default function errorHandler(err, req, res, next) {
+  if (err instanceof ZodError) {
+    const formatted = err.issues.map((e) => ({
+      field: e.path.join("."),
+      message: e.message,
+    }));
+
+    return res.status(400).json(formatted);
+  }
+
   logger.error(err);
   res.status(err.statusCode || 500).send({
     message: err.message || "Internal Server Error",

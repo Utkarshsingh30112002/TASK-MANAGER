@@ -12,10 +12,7 @@ export async function signupUser(req, res, next) {
   try {
     const result = createUserSchema.safeParse(req.body);
     if (!result.success) {
-      const err = new Error(result.error.message);
-      err.details = result.error.errors;
-      err.statusCode = 400;
-      return next(err);
+      return next(result.error);
     }
     const { username, password, email } = result.data;
     const hashedPass = await bcrypt.hash(password, 5);
@@ -44,10 +41,7 @@ export async function signinUser(req, res, next) {
   try {
     const result = signinUserSchema.safeParse(req.body);
     if (!result.success) {
-      const err = new Error(result.error.message);
-      err.details = result.error.errors;
-      err.statusCode = 400;
-      return next(err);
+      return next(result.error);
     }
     const { username, password } = result.data;
     const user = await User.findOne({

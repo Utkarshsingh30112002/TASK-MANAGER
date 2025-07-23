@@ -15,10 +15,7 @@ export async function createTask(req, res, next) {
   try {
     const result = createTaskSchema.safeParse(req.body);
     if (!result.success) {
-      const err = new Error(result.error.message);
-      err.details = result.error.errors;
-      err.statusCode = 400;
-      return next(err);
+      return next(result.error);
     }
     const task = await Task.create({ ...result.data, userId: req.user.id });
     logger.info(`Task created with ID: ${task.id} by user ID: ${req.user.id}`);
@@ -34,10 +31,7 @@ export async function updateTask(req, res, next) {
   try {
     const result = updateTaskSchema.safeParse(req.body);
     if (!result.success) {
-      const err = new Error(result.error.message);
-      err.details = result.error.errors;
-      err.statusCode = 400;
-      return next(err);
+      return next(result.error);
     }
     const taskId = req.params.id;
     const [updated] = await Task.update(result.data, {
@@ -60,7 +54,9 @@ export async function updateTask(req, res, next) {
 export async function getTaskByID(req, res, next) {
   try {
     const taskId = req.params.id;
-    const task = await Task.findOne({ where: { id: taskId, userId: req.user.id } });
+    const task = await Task.findOne({
+      where: { id: taskId, userId: req.user.id },
+    });
     if (!task) {
       const err = new Error("Task not found");
       err.statusCode = 404;
@@ -79,7 +75,9 @@ export async function getTaskByID(req, res, next) {
 export async function deleteTaskById(req, res, next) {
   try {
     const taskId = req.params.id;
-    const deleted = await Task.destroy({ where: { id: taskId, userId: req.user.id } });
+    const deleted = await Task.destroy({
+      where: { id: taskId, userId: req.user.id },
+    });
     if (!deleted) {
       const err = new Error("Task not found");
       err.statusCode = 404;
@@ -107,10 +105,7 @@ export async function getAllTasks(req, res, next) {
       sortPriority,
     });
     if (!result.success) {
-      const err = new Error(result.error.message);
-      err.details = result.error.errors;
-      err.statusCode = 400;
-      return next(err);
+      return next(result.error);
     }
     const {
       priority: p,

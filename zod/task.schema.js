@@ -40,7 +40,7 @@ export const getTaskSchema = z.object({
         return [new Date(arg[0]), new Date(arg[1])];
       }
       return undefined;
-    }, z.tuple([z.date(), z.date()]))
+    }, z.tuple([z.date(), z.date()], "Due date must be a valid date range eg 2022,2024"))
     .optional(),
   sortDueDate: z
     .enum(["asc", "desc"], "sortDueDate must be one of desc or asc")
